@@ -2,7 +2,7 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
+
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -37,7 +37,9 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        self.count += 1;
+        self.items.push(value);
+        self.heapify_up(self.count);
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -57,8 +59,40 @@ where
     }
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+        let left = self.left_child_idx(idx);
+        let right = self.right_child_idx(idx);
+        
+        if right > self.count {
+            left
+        } else if (self.comparator)(&self.items[left], &self.items[right]) {
+            left
+        } else {
+            right
+        }
+    }
+    
+    fn heapify_up(&mut self, mut idx: usize) {
+        while idx > 1 {
+            let parent = self.parent_idx(idx);
+            if (self.comparator)(&self.items[idx], &self.items[parent]) {
+                self.items.swap(idx, parent);
+                idx = parent;
+            } else {
+                break;
+            }
+        }
+    }
+    
+    fn heapify_down(&mut self, mut idx: usize) {
+        while self.children_present(idx) {
+            let smallest = self.smallest_child_idx(idx);
+            if (self.comparator)(&self.items[smallest], &self.items[idx]) {
+                self.items.swap(idx, smallest);
+                idx = smallest;
+            } else {
+                break;
+            }
+        }
     }
 }
 
@@ -84,8 +118,18 @@ where
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.count == 0 {
+            return None;
+        }
+        
+        let result = self.items.swap_remove(1);
+        self.count -= 1;
+        
+        if self.count > 0 {
+            self.heapify_down(1);
+        }
+        
+        Some(result)
     }
 }
 
@@ -150,5 +194,30 @@ mod tests {
         assert_eq!(heap.next(), Some(4));
         heap.add(1);
         assert_eq!(heap.next(), Some(2));
+    }
+}
+
+fn main() {
+    // Example usage of the heap implementation
+    let mut min_heap = MinHeap::new::<i32>();
+    min_heap.add(4);
+    min_heap.add(2);
+    min_heap.add(9);
+    min_heap.add(11);
+    
+    println!("Min heap elements:");
+    while let Some(value) = min_heap.next() {
+        println!("{}", value);
+    }
+    
+    let mut max_heap = MaxHeap::new::<i32>();
+    max_heap.add(4);
+    max_heap.add(2);
+    max_heap.add(9);
+    max_heap.add(11);
+    
+    println!("Max heap elements:");
+    while let Some(value) = max_heap.next() {
+        println!("{}", value);
     }
 }
